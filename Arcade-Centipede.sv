@@ -266,6 +266,15 @@ wire [24:0] ps2_mouse;
 
 wire [21:0] gamma_bus;
 
+// Lámparas de inicio activas a nivel bajo, desde el dominio de juego al HPS.
+(* altera_attribute = "-name SYNCHRONIZER_IDENTIFICATION FORCED_IF_ASYNCHRONOUS" *)
+reg [1:0] cabinet_lamps_meta = 2'b00;
+reg [1:0] cabinet_lamps = 2'b00;
+always @(posedge clk_sys) begin
+	cabinet_lamps_meta <= reset ? 2'b00 : ~led_o[1:0];
+	cabinet_lamps <= cabinet_lamps_meta;
+end
+
 
 hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
@@ -280,6 +289,8 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
 	.forced_scandoubler(forced_scandoubler),
 	.video_rotated(video_rotated),
 	.gamma_bus(gamma_bus),
+	.ps2_kbd_led_use(3'b011),
+	.ps2_kbd_led_status({1'b0, cabinet_lamps[0], cabinet_lamps[1]}),
 	.direct_video(direct_video),
 
 	.ioctl_download(ioctl_download),
